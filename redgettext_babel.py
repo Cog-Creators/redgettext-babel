@@ -117,9 +117,11 @@ class TokenEater:
 
     # noinspection PyUnusedLocal
     def __class_seen(self, ttype: int, string: str, lineno: int) -> None:
-        # Look for the `translator` subclass kwarg
+        # Look for the `Cog` base class
         if self.__enclosure_count == 1:
-            if ttype == NAME and string == "translator":
+            if (ttype == NAME and string == "Cog") or (
+                ttype == STRING and string in ('"Cog"', "'Cog'")
+            ):
                 self.__docstring_type = "cog"
                 self.__state = self.__suite_seen
                 return
@@ -138,12 +140,11 @@ class TokenEater:
 
     # noinspection PyUnusedLocal
     def __suite_seen(self, ttype: int, string: str, lineno: int) -> None:
-        if ttype == NAME and string == "def":
+        if ttype == NAME and string in ("class", "def"):
             self.__after_def = True
         elif ttype == NAME and self.__after_def:
             # This is the command name
             self.__cur_funcname = string
-            self.__docstring_type = "command"
             self.__after_def = False
         elif ttype == OP:
             if string == ":" and self.__enclosure_count == 0:
