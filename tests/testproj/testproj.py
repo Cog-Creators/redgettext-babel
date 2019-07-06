@@ -27,3 +27,4 @@ class MyCog(commands.Cog, translator=_):
         # translators
         _("string testing multiline translator comment")
         _("warning".format(x))
+        _("string containing quotes \" '")

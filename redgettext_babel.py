@@ -3,6 +3,7 @@ Babel extractor for Red.
 
 Main entry point is the ``extract_red()`` function.
 """
+import re
 import sys
 from token import COMMENT, INDENT, NAME, NEWLINE, NL, OP, STRING
 from tokenize import tokenize
@@ -25,7 +26,7 @@ except ModuleNotFoundError:
     parse_encoding = lambda *a: "UTF-8"
     parse_future_flags = lambda *a: 0
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 _MessageEntry = Tuple[int, str, str, List[str]]
 
@@ -246,17 +247,11 @@ class TokenEater:
 
 # We only want to extract string literals which aren't f-strings.
 # https://docs.python.org/3.7/reference/lexical_analysis.html#string-and-bytes-literals
-ALLOWED_STRING_PREFIXES = {"r", "u", "R", "U"}
+_VALID_STRING_PATTERN = re.compile(r"^[rRuU]?['\"]")
 
 
 def _is_literal_string(string: str) -> bool:
-    quote_pos = string.find("'")
-    if quote_pos < 0:
-        quote_pos = string.find('"')
-        if quote_pos < 0:
-            return False
-    prefix = string[:quote_pos]
-    return not prefix or prefix in ALLOWED_STRING_PREFIXES
+    return bool(_VALID_STRING_PATTERN.match(string))
 
 
 def _safe_eval(string: str, encoding: str = "UTF-8", future_flags: int = 0) -> str:
